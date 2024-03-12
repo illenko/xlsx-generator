@@ -14,21 +14,22 @@ type Sheet struct {
 
 type Header struct {
 	Title  string `json:"title"`
-	Colors struct {
-		Font       string `json:"font"`
-		Background string `json:"background"`
-	} `json:"colors"`
+	Colors *Color `json:"color"`
+}
+
+type Color struct {
+	Font       string `json:"font"`
+	Background string `json:"background"`
 }
 
 type AdditionalInfo struct {
-	Top *[]struct {
-		Title string `json:"title"`
-		Value string `json:"value"`
-	} `json:"top"`
-	Bottom *[]struct {
-		Title string `json:"title"`
-		Value string `json:"value"`
-	} `json:"bottom"`
+	Top    *[]AdditionalData `json:"top"`
+	Bottom *[]AdditionalData `json:"bottom"`
+}
+
+type AdditionalData struct {
+	Title string `json:"title"`
+	Value string `json:"value"`
 }
 
 type Column struct {
@@ -39,4 +40,4 @@ type Column struct {
 	Type  string `json:"type"`
 }
 
-type Data map[string]interface{}
+type Data map[string]string
