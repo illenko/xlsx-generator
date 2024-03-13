@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/illenko/xlsx-generator/internal/model"
 	"github.com/illenko/xlsx-generator/internal/service"
@@ -32,13 +31,12 @@ func (h XlsxHandlerImpl) Generate(c *gin.Context) {
 		return
 	}
 
-	h.log.Info(fmt.Sprint("Received: %w", req))
-
 	res, err := h.service.Generate(req)
 	if err != nil {
 		return
 	}
 
+	c.Header("Content-Type", "application/vnd.ms-excel")
 	c.Header("Content-Disposition", "attachment; filename=file.xlsx")
 	c.Data(http.StatusOK, "application/octet-stream", res)
 }

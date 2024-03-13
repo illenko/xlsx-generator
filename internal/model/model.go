@@ -6,20 +6,9 @@ type XlsxRequest struct {
 
 type Sheet struct {
 	Name           string          `json:"name"`
-	Header         *Header         `json:"header"`
 	AdditionalInfo *AdditionalInfo `json:"additionalInfo"`
 	Columns        *[]Column       `json:"columns"`
 	Data           *[]Data         `json:"data"`
-}
-
-type Header struct {
-	Title  string `json:"title"`
-	Colors *Color `json:"color"`
-}
-
-type Color struct {
-	Font       string `json:"font"`
-	Background string `json:"background"`
 }
 
 type AdditionalInfo struct {
@@ -33,11 +22,22 @@ type AdditionalData struct {
 }
 
 type Column struct {
-	ID    string `json:"id"`
-	Title string `json:"title"`
-	Width int    `json:"width"`
-	Color string `json:"color"`
-	Type  string `json:"type"`
+	ID    string    `json:"id"`
+	Title string    `json:"title"`
+	Type  *CellType `json:"type"`
+	Color *Color    `json:"color"`
 }
 
 type Data map[string]string
+
+type Color struct {
+	Font       *string `json:"font"`
+	Background *string `json:"background"`
+}
+
+const (
+	NumberCell CellType = "number"
+	StringCell CellType = "string"
+)
+
+type CellType string
