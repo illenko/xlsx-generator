@@ -4,9 +4,6 @@
 * Xlsx Generation: https://github.com/tealeg/xlsx
 * DI: https://github.com/uber-go/fx
 * Web Handlers: https://github.com/gin-gonic/gin
-* Logging: https://github.com/uber-go/zap
-* OpenAPI spec: https://github.com/swaggo
-
 
 ### Commands:
 

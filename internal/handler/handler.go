@@ -1,10 +1,13 @@
 package handler
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/illenko/xlsx-generator/internal/logger"
 	"github.com/illenko/xlsx-generator/internal/model"
 	"github.com/illenko/xlsx-generator/internal/service"
-	"go.uber.org/zap"
+	"log/slog"
 	"net/http"
 )
 
@@ -13,11 +16,11 @@ type XlsxHandler interface {
 }
 
 type XlsxHandlerImpl struct {
-	log     *zap.Logger
+	log     *slog.Logger
 	service service.XlsxService
 }
 
-func New(log *zap.Logger, service service.XlsxService) XlsxHandler {
+func New(log *slog.Logger, service service.XlsxService) XlsxHandler {
 	return XlsxHandlerImpl{
 		log:     log,
 		service: service,
@@ -25,13 +28,15 @@ func New(log *zap.Logger, service service.XlsxService) XlsxHandler {
 }
 
 func (h XlsxHandlerImpl) Generate(c *gin.Context) {
+	ctx := logger.AppendCtx(context.Background(), slog.String("request_id", uuid.New().String()))
+
 	var req model.XlsxRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
 		return
 	}
 
-	res, err := h.service.Generate(req)
+	res, err := h.service.Generate(ctx, req)
 	if err != nil {
 		return
 	}

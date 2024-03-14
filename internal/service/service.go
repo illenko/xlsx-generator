@@ -3,31 +3,32 @@ package service
 import (
 	"bufio"
 	"bytes"
+	"context"
+	"fmt"
+	"github.com/illenko/xlsx-generator/internal/logger"
 	"github.com/illenko/xlsx-generator/internal/model"
 	"github.com/illenko/xlsx-generator/internal/style"
 	"github.com/tealeg/xlsx/v3"
-	"go.uber.org/zap"
+	"log/slog"
 )
 
 type XlsxService interface {
-	Generate(request model.XlsxRequest) (file []byte, err error)
+	Generate(ctx context.Context, request model.XlsxRequest) (file []byte, err error)
 }
 
 type XlsxServiceImpl struct {
-	log *zap.Logger
+	log *slog.Logger
 }
 
-func New(log *zap.Logger) XlsxService {
-	return XlsxServiceImpl{
-		log: log,
-	}
+func New(log *slog.Logger) XlsxService {
+	return XlsxServiceImpl{log: log}
 }
 
-func (s XlsxServiceImpl) Generate(request model.XlsxRequest) (file []byte, err error) {
+func (s XlsxServiceImpl) Generate(ctx context.Context, request model.XlsxRequest) (file []byte, err error) {
 	wb := xlsx.NewFile()
 
 	for _, sheet := range request.Sheets {
-		s.createSheet(wb, &sheet)
+		s.createSheet(ctx, wb, &sheet)
 	}
 
 	var b bytes.Buffer
@@ -42,20 +43,23 @@ func (s XlsxServiceImpl) Generate(request model.XlsxRequest) (file []byte, err e
 	return b.Bytes(), nil
 }
 
-func (s XlsxServiceImpl) createSheet(wb *xlsx.File, sheet *model.Sheet) {
+func (s XlsxServiceImpl) createSheet(ctx context.Context, wb *xlsx.File, sheet *model.Sheet) {
 	wbSheet, err := wb.AddSheet(sheet.Name)
 	if err != nil {
 		return
 	}
+
+	ctx = logger.AppendCtx(ctx, slog.String("sheet_name", sheet.Name))
+	s.log.InfoContext(ctx, "Created sheet")
 	currentRowIndex := 0
-	currentRowIndex = s.createAdditionalData(wbSheet, currentRowIndex, sheet.AdditionalInfo.Top)
-	currentRowIndex = s.createColumns(wbSheet, currentRowIndex, sheet.Columns)
-	currentRowIndex = s.createTable(wbSheet, currentRowIndex, sheet.Columns, sheet.Data)
-	currentRowIndex = s.createAdditionalData(wbSheet, currentRowIndex, sheet.AdditionalInfo.Bottom)
+	currentRowIndex = s.createAdditionalData(ctx, wbSheet, currentRowIndex, sheet.AdditionalInfo.Top)
+	currentRowIndex = s.createColumns(ctx, wbSheet, currentRowIndex, sheet.Columns)
+	currentRowIndex = s.createTable(ctx, wbSheet, currentRowIndex, sheet.Columns, sheet.Data)
+	currentRowIndex = s.createAdditionalData(ctx, wbSheet, currentRowIndex, sheet.AdditionalInfo.Bottom)
 	s.setAutoWidth(wbSheet, sheet)
 }
 
-func (s XlsxServiceImpl) createAdditionalData(sheet *xlsx.Sheet, currentRowIndex int, data *[]model.AdditionalData) (cIndex int) {
+func (s XlsxServiceImpl) createAdditionalData(ctx context.Context, sheet *xlsx.Sheet, currentRowIndex int, data *[]model.AdditionalData) (cIndex int) {
 	if data != nil {
 		for _, a := range *data {
 			_, err := sheet.AddRowAtIndex(currentRowIndex)
@@ -64,6 +68,7 @@ func (s XlsxServiceImpl) createAdditionalData(sheet *xlsx.Sheet, currentRowIndex
 			}
 			s.createCell(sheet, currentRowIndex, 0, a.Title, style.DefaultAdditionalInfoTitle)
 			s.createCell(sheet, currentRowIndex, 1, a.Value, style.Default)
+			s.log.InfoContext(ctx, fmt.Sprintf("Created additional data row, title: %v, value: %v, index: %v", a.Title, a.Value, currentRowIndex))
 			currentRowIndex++
 		}
 		currentRowIndex = s.emptyRow(sheet, currentRowIndex)
@@ -71,7 +76,7 @@ func (s XlsxServiceImpl) createAdditionalData(sheet *xlsx.Sheet, currentRowIndex
 	return currentRowIndex
 }
 
-func (s XlsxServiceImpl) createColumns(sheet *xlsx.Sheet, currentRowIndex int, columns *[]model.Column) (cIndex int) {
+func (s XlsxServiceImpl) createColumns(ctx context.Context, sheet *xlsx.Sheet, currentRowIndex int, columns *[]model.Column) (cIndex int) {
 	if columns != nil {
 		_, err := sheet.AddRowAtIndex(currentRowIndex)
 		if err != nil {
@@ -79,13 +84,14 @@ func (s XlsxServiceImpl) createColumns(sheet *xlsx.Sheet, currentRowIndex int, c
 		}
 		for i, c := range *columns {
 			s.createCell(sheet, currentRowIndex, i, c.Title, style.Resolve(c.Color, style.DefaultColumn))
+			s.log.InfoContext(ctx, fmt.Sprintf("Created column, title: %v, index: %v", c.Title, i))
 		}
 		currentRowIndex++
 	}
 	return currentRowIndex
 }
 
-func (s XlsxServiceImpl) createTable(sheet *xlsx.Sheet, currentRowIndex int, columns *[]model.Column, data *[]model.Data) (cIndex int) {
+func (s XlsxServiceImpl) createTable(ctx context.Context, sheet *xlsx.Sheet, currentRowIndex int, columns *[]model.Column, data *[]model.Data) (cIndex int) {
 	if columns != nil && data != nil {
 		for _, d := range *data {
 			_, err := sheet.AddRowAtIndex(currentRowIndex)
@@ -94,6 +100,7 @@ func (s XlsxServiceImpl) createTable(sheet *xlsx.Sheet, currentRowIndex int, col
 			}
 			for j, c := range *columns {
 				s.createCellWithType(sheet, currentRowIndex, j, d[c.ID], style.Default, c.Type)
+				s.log.InfoContext(ctx, fmt.Sprintf("Created table cell, value: '%v', row index: %v, col index: %v", d[c.ID], currentRowIndex, j))
 			}
 			currentRowIndex++
 		}

@@ -3,11 +3,12 @@ package app
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/illenko/xlsx-generator/internal/handler"
+	"github.com/illenko/xlsx-generator/internal/logger"
 	"github.com/illenko/xlsx-generator/internal/server"
 	"github.com/illenko/xlsx-generator/internal/service"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
-	"go.uber.org/zap"
+	"log/slog"
 )
 
 type App struct{}
@@ -15,7 +16,7 @@ type App struct{}
 func (a App) Run() {
 	fx.New(
 		fx.Provide(
-			zap.NewExample,
+			logger.New,
 			service.New,
 			handler.New,
 			server.New,
@@ -26,8 +27,8 @@ func (a App) Run() {
 				return
 			}
 		}),
-		fx.WithLogger(func(log *zap.Logger) fxevent.Logger {
-			return &fxevent.ZapLogger{Logger: log}
+		fx.WithLogger(func(log *slog.Logger) fxevent.Logger {
+			return &fxevent.SlogLogger{Logger: log}
 		}),
 	).Run()
 }
