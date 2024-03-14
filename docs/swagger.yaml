@@ -1,0 +1,153 @@
+definitions:
+  handler.HealthResponse:
+    properties:
+      status:
+        $ref: '#/definitions/handler.HealthStatus'
+    type: object
+  handler.HealthStatus:
+    enum:
+    - OK
+    type: string
+    x-enum-varnames:
+    - OkStatus
+  handler.ResponseError:
+    properties:
+      error:
+        type: string
+      id:
+        type: string
+    type: object
+  model.AdditionalData:
+    properties:
+      title:
+        example: User
+        type: string
+      value:
+        example: user@test.com
+        type: string
+    type: object
+  model.AdditionalInfo:
+    properties:
+      bottom:
+        items:
+          $ref: '#/definitions/model.AdditionalData'
+        type: array
+      top:
+        items:
+          $ref: '#/definitions/model.AdditionalData'
+        type: array
+    type: object
+  model.CellType:
+    enum:
+    - number
+    - string
+    type: string
+    x-enum-varnames:
+    - NumberCell
+    - StringCell
+  model.Color:
+    properties:
+      background:
+        example: C4DC8F
+        type: string
+      font:
+        example: 1D1E1A
+        type: string
+    type: object
+  model.Column:
+    properties:
+      color:
+        $ref: '#/definitions/model.Color'
+      id:
+        example: payment_id
+        type: string
+      title:
+        example: Payment ID
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/model.CellType'
+        example: number
+    type: object
+  model.Data:
+    additionalProperties:
+      type: string
+    type: object
+  model.Sheet:
+    properties:
+      additionalInfo:
+        $ref: '#/definitions/model.AdditionalInfo'
+      columns:
+        items:
+          $ref: '#/definitions/model.Column'
+        type: array
+      data:
+        items:
+          $ref: '#/definitions/model.Data'
+        type: array
+      name:
+        example: Payments
+        type: string
+    type: object
+  model.XlsxRequest:
+    properties:
+      sheets:
+        items:
+          $ref: '#/definitions/model.Sheet'
+        type: array
+    type: object
+info:
+  contact: {}
+  title: Xlsx generator API
+  version: "1.0"
+paths:
+  /health/liveness:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.HealthResponse'
+      tags:
+      - health
+  /health/readiness:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.HealthResponse'
+      tags:
+      - health
+  /xlsx:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Request
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/model.XlsxRequest'
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ResponseError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ResponseError'
+      summary: Generates xlsx file
+      tags:
+      - xlsx
+swagger: "2.0"

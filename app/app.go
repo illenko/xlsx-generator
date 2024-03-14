@@ -18,7 +18,8 @@ func (a App) Run() {
 		fx.Provide(
 			logger.New,
 			service.New,
-			handler.New,
+			handler.NewXlsx,
+			handler.NewHealth,
 			server.New,
 		),
 		fx.Invoke(func(e *gin.Engine) {

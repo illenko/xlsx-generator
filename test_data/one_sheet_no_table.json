@@ -1,0 +1,25 @@
+{
+  "sheets": [
+    {
+      "name": "Payments",
+      "additionalInfo": {
+        "top": [
+          {
+            "title": "User",
+            "value": "test@gmail.com"
+          },
+          {
+            "title": "Period",
+            "value": "01.02.2024-29.02.2024"
+          }
+        ],
+        "bottom": [
+          {
+            "title": "Total amount",
+            "value": "210.0"
+          }
+        ]
+      }
+    }
+  ]
+}
