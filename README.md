@@ -1,91 +1,37 @@
 ## Service for xlsx files generation.
+
+### Source code for [Medium article](https://medium.com/@kostiantynillienko/golang-building-microservice-for-generating-xlsx-excel-reports-f0aaf8e47711).
+
 ### Stack:
 
-* Xlsx Generation: https://github.com/tealeg/xlsx
-* DI: https://github.com/uber-go/fx
-* Web Handlers: https://github.com/gin-gonic/gin
-* OpenAPI spec: https://github.com/swaggo
-* Asserts: https://github.com/stretchr/testify
+* [Xlsx](https://github.com/tealeg/xlsx)
+* [Fx](https://github.com/uber-go/fx)
+* [Gin](https://github.com/gin-gonic/gin)
+* [Swaggo](https://github.com/swaggo)
+* [Testify](https://github.com/stretchr/testify)
+
+### Request examples located in `test_data` folder.
 
 ### Commands:
 
+#### Generate OpenAPI spec:
+
+````shell
+swag init --parseDependency
+````
+
 #### Docker build
+
 ````shell
 docker build -t xsls-generator:latest .
 ````
 
 #### Docker run
+
 ````shell
 docker run -d -t -i -p 8080:8080 --name xsls-generator xsls-generator:latest
 ````
 
-### Request example:
-```shell
-curl --location 'localhost:8080/xlsx' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "sheets": [
-        {
-            "name": "Payments",
-            "additionalInfo": {
-                "top": [
-                    {
-                        "title": "User",
-                        "value": "test@gmail.com"
-                    },
-                    {
-                        "title": "Period",
-                        "value": "01.02.2024-29.02.2024"
-                    }
-                ],
-                "bottom": [
-                    {
-                        "title": "Total amount",
-                        "value": "210.0"
-                    }
-                ]
-            },
-            "columns": [
-                {
-                    "id": "payment_id",
-                    "title": "Payment ID",
-                    "color": {
-                        "background": "8FC8DC"
-                    }
-                },
-                {
-                    "id": "category",
-                    "title": "Category",
-                    "type": "string",
-                    "color": {
-                        "font": "1D1E1A",
-                        "background": "C4DC8F"
-                    }
-                },
-                {
-                    "id": "amount",
-                    "title": "Amount",
-                    "type": "number"
-                }
-            ],
-            "data": [
-                {
-                    "payment_id": "1",
-                    "category": "P2P Transfer",
-                    "amount": "100.1"
-                },
-                {
-                    "payment_id": "2",
-                    "category": "Taxi",
-                    "amount": "50.0"
-                },
-                {
-                    "payment_id": "3",
-                    "category": "Food",
-                    "amount": "60.0"
-                }
-            ]
-        }
-    ]
-}'
-```
+### Generated file example:
+
+![img.png](file_example.png)

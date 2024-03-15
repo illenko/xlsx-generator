@@ -33,7 +33,7 @@ func TestXlsxServiceImpl_Generate(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			request := readRequest(tc)
 
-			sut := XlsxServiceImpl{log: logger.New()}
+			sut := New(logger.New())
 
 			wb := sut.Generate(context.Background(), request)
 
