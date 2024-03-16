@@ -14,15 +14,15 @@ type XlsxService interface {
 	Generate(ctx context.Context, request model.XlsxRequest) *xlsx.File
 }
 
-type XlsxServiceImpl struct {
+type xlsxService struct {
 	log *slog.Logger
 }
 
 func New(log *slog.Logger) XlsxService {
-	return XlsxServiceImpl{log: log}
+	return xlsxService{log: log}
 }
 
-func (s XlsxServiceImpl) Generate(ctx context.Context, request model.XlsxRequest) *xlsx.File {
+func (s xlsxService) Generate(ctx context.Context, request model.XlsxRequest) *xlsx.File {
 	wb := xlsx.NewFile()
 
 	s.createSheets(ctx, request, wb)
@@ -30,13 +30,13 @@ func (s XlsxServiceImpl) Generate(ctx context.Context, request model.XlsxRequest
 	return wb
 }
 
-func (s XlsxServiceImpl) createSheets(ctx context.Context, request model.XlsxRequest, wb *xlsx.File) {
+func (s xlsxService) createSheets(ctx context.Context, request model.XlsxRequest, wb *xlsx.File) {
 	for _, sheet := range request.Sheets {
 		s.createSheet(ctx, wb, &sheet)
 	}
 }
 
-func (s XlsxServiceImpl) createSheet(ctx context.Context, wb *xlsx.File, sheet *model.Sheet) {
+func (s xlsxService) createSheet(ctx context.Context, wb *xlsx.File, sheet *model.Sheet) {
 	wbSheet, err := wb.AddSheet(sheet.Name)
 	ctx = logger.AppendCtx(ctx, slog.String("sheet_name", sheet.Name))
 
@@ -58,7 +58,7 @@ func (s XlsxServiceImpl) createSheet(ctx context.Context, wb *xlsx.File, sheet *
 	s.adjustColWidth(ctx, wbSheet, sheet)
 }
 
-func (s XlsxServiceImpl) setAdditionalData(ctx context.Context, sheet *xlsx.Sheet, currentRowIndex int, data *[]model.AdditionalData) (cIndex int) {
+func (s xlsxService) setAdditionalData(ctx context.Context, sheet *xlsx.Sheet, currentRowIndex int, data *[]model.AdditionalData) (cIndex int) {
 	if data != nil {
 		for _, a := range *data {
 			currentRowIndex = s.createRow(ctx, sheet, currentRowIndex)
@@ -72,7 +72,7 @@ func (s XlsxServiceImpl) setAdditionalData(ctx context.Context, sheet *xlsx.Shee
 	return currentRowIndex
 }
 
-func (s XlsxServiceImpl) setColumns(ctx context.Context, sheet *xlsx.Sheet, currentRowIndex int, columns *[]model.Column) (cIndex int) {
+func (s xlsxService) setColumns(ctx context.Context, sheet *xlsx.Sheet, currentRowIndex int, columns *[]model.Column) (cIndex int) {
 	if columns != nil {
 		currentRowIndex = s.createRow(ctx, sheet, currentRowIndex)
 		for i, c := range *columns {
@@ -84,7 +84,7 @@ func (s XlsxServiceImpl) setColumns(ctx context.Context, sheet *xlsx.Sheet, curr
 	return currentRowIndex
 }
 
-func (s XlsxServiceImpl) setTable(ctx context.Context, sheet *xlsx.Sheet, currentRowIndex int, columns *[]model.Column, data *[]model.Data) (cIndex int) {
+func (s xlsxService) setTable(ctx context.Context, sheet *xlsx.Sheet, currentRowIndex int, columns *[]model.Column, data *[]model.Data) (cIndex int) {
 	if columns != nil && data != nil {
 		for _, d := range *data {
 			currentRowIndex = s.createRow(ctx, sheet, currentRowIndex)
@@ -99,13 +99,13 @@ func (s XlsxServiceImpl) setTable(ctx context.Context, sheet *xlsx.Sheet, curren
 	return currentRowIndex
 }
 
-func (s XlsxServiceImpl) createEmptyRow(ctx context.Context, sheet *xlsx.Sheet, currentRowIndex int) (cIndex int) {
+func (s xlsxService) createEmptyRow(ctx context.Context, sheet *xlsx.Sheet, currentRowIndex int) (cIndex int) {
 	currentRowIndex = s.createRow(ctx, sheet, currentRowIndex)
 	currentRowIndex++
 	return currentRowIndex
 }
 
-func (s XlsxServiceImpl) createRow(ctx context.Context, sheet *xlsx.Sheet, currentRowIndex int) (cIndex int) {
+func (s xlsxService) createRow(ctx context.Context, sheet *xlsx.Sheet, currentRowIndex int) (cIndex int) {
 	_, err := sheet.AddRowAtIndex(currentRowIndex)
 	if err != nil {
 		s.log.ErrorContext(ctx, fmt.Sprintf("Error while creating row: %v", currentRowIndex))
@@ -114,11 +114,11 @@ func (s XlsxServiceImpl) createRow(ctx context.Context, sheet *xlsx.Sheet, curre
 	return currentRowIndex
 }
 
-func (s XlsxServiceImpl) createCell(ctx context.Context, sheet *xlsx.Sheet, row int, col int, val string, style *xlsx.Style) (cell *xlsx.Cell) {
+func (s xlsxService) createCell(ctx context.Context, sheet *xlsx.Sheet, row int, col int, val string, style *xlsx.Style) (cell *xlsx.Cell) {
 	return s.createCellWithType(ctx, sheet, row, col, val, style, nil)
 }
 
-func (s XlsxServiceImpl) createCellWithType(ctx context.Context, sheet *xlsx.Sheet, row int, col int, val string, style *xlsx.Style, cellType *model.CellType) (cell *xlsx.Cell) {
+func (s xlsxService) createCellWithType(ctx context.Context, sheet *xlsx.Sheet, row int, col int, val string, style *xlsx.Style, cellType *model.CellType) (cell *xlsx.Cell) {
 	cell, err := sheet.Cell(row, col)
 	if err != nil {
 		s.log.ErrorContext(ctx, fmt.Sprintf("Error while creating cell, row: %v, col: %v, val: %v", row, col, val))
@@ -129,7 +129,7 @@ func (s XlsxServiceImpl) createCellWithType(ctx context.Context, sheet *xlsx.She
 	return
 }
 
-func (s XlsxServiceImpl) setCellValue(columnType *model.CellType, cell *xlsx.Cell, val string) {
+func (s xlsxService) setCellValue(columnType *model.CellType, cell *xlsx.Cell, val string) {
 	if columnType == nil || *columnType == model.StringCell {
 		cell.Value = val
 	} else if *columnType == model.NumberCell {
@@ -139,7 +139,7 @@ func (s XlsxServiceImpl) setCellValue(columnType *model.CellType, cell *xlsx.Cel
 
 const DefaultColumnsSize = 2
 
-func (s XlsxServiceImpl) adjustColWidth(ctx context.Context, wbSheet *xlsx.Sheet, sheet *model.Sheet) {
+func (s xlsxService) adjustColWidth(ctx context.Context, wbSheet *xlsx.Sheet, sheet *model.Sheet) {
 	size := DefaultColumnsSize
 	if sheet.Columns != nil && len(*sheet.Columns) > size {
 		size = len(*sheet.Columns)
@@ -147,7 +147,7 @@ func (s XlsxServiceImpl) adjustColWidth(ctx context.Context, wbSheet *xlsx.Sheet
 	s.setColAutoWidth(ctx, wbSheet, size)
 }
 
-func (s XlsxServiceImpl) setColAutoWidth(ctx context.Context, wbSheet *xlsx.Sheet, length int) {
+func (s xlsxService) setColAutoWidth(ctx context.Context, wbSheet *xlsx.Sheet, length int) {
 	for i := 1; i <= length; i++ {
 		err := wbSheet.SetColAutoWidth(i, xlsx.DefaultAutoWidth)
 		if err != nil {

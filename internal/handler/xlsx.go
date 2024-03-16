@@ -17,20 +17,20 @@ type XlsxHandler interface {
 	Generate(c *gin.Context)
 }
 
-type XlsxHandlerImpl struct {
+type xlsxHandler struct {
 	log     *slog.Logger
 	service service.XlsxService
 }
 
 func NewXlsx(log *slog.Logger, service service.XlsxService) XlsxHandler {
-	return XlsxHandlerImpl{
+	return xlsxHandler{
 		log:     log,
 		service: service,
 	}
 }
 
 type ResponseError struct {
-	Id    uuid.UUID `json:"id"`
+	ID    uuid.UUID `json:"id"`
 	Error string    `json:"error"`
 }
 
@@ -47,16 +47,16 @@ type ResponseError struct {
 //	@Failure		400 {object} handler.ResponseError
 //	@Failure		500 {object} handler.ResponseError
 //	@Router			/xlsx [post]
-func (h XlsxHandlerImpl) Generate(c *gin.Context) {
-	requestId := uuid.New()
-	ctx := logger.AppendCtx(context.Background(), slog.String("requestId", requestId.String()))
+func (h xlsxHandler) Generate(c *gin.Context) {
+	requestID := uuid.New()
+	ctx := logger.AppendCtx(context.Background(), slog.String("requestID", requestID.String()))
 
 	h.log.InfoContext(ctx, "Processing generation request")
 
 	var req model.XlsxRequest
 	if err := c.ShouldBindJSON(&req); err != nil || req.Sheets == nil {
 		h.log.WarnContext(ctx, "Invalid request body")
-		c.JSON(http.StatusBadRequest, ResponseError{Id: requestId, Error: "Invalid Request Body"})
+		c.JSON(http.StatusBadRequest, ResponseError{ID: requestID, Error: "Invalid Request Body"})
 		return
 	}
 
@@ -69,7 +69,7 @@ func (h XlsxHandlerImpl) Generate(c *gin.Context) {
 
 	if err != nil {
 		h.log.ErrorContext(ctx, "Internal server error")
-		c.JSON(http.StatusInternalServerError, ResponseError{Id: requestId, Error: "Internal Server Error"})
+		c.JSON(http.StatusInternalServerError, ResponseError{ID: requestID, Error: "Internal Server Error"})
 		return
 	}
 

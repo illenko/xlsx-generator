@@ -60,7 +60,7 @@ func TestXlsxServiceImpl_Generate(t *testing.T) {
 				}
 
 				if sheet.AdditionalInfo != nil && sheet.AdditionalInfo.Bottom != nil {
-					currentRowIndex = assertAdditionalData(t, sheet.AdditionalInfo.Bottom, wbSheet, currentRowIndex)
+					assertAdditionalData(t, sheet.AdditionalInfo.Bottom, wbSheet, currentRowIndex)
 				}
 			}
 		})
