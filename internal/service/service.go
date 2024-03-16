@@ -47,6 +47,9 @@ func (s XlsxServiceImpl) createSheet(ctx context.Context, wb *xlsx.File, sheet *
 
 	s.log.InfoContext(ctx, "Created sheet")
 	currentRowIndex := 0
+	if sheet.AdditionalInfo != nil {
+		currentRowIndex = s.setAdditionalData(ctx, wbSheet, currentRowIndex, sheet.AdditionalInfo.Top)
+	}
 	currentRowIndex = s.setColumns(ctx, wbSheet, currentRowIndex, sheet.Columns)
 	currentRowIndex = s.setTable(ctx, wbSheet, currentRowIndex, sheet.Columns, sheet.Data)
 	if sheet.AdditionalInfo != nil {
