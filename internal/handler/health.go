@@ -11,12 +11,12 @@ type HealthHandler interface {
 	Readiness(c *gin.Context)
 }
 
-type HealthHandlerImpl struct {
+type healthHandler struct {
 	log *slog.Logger
 }
 
 func NewHealth(log *slog.Logger) HealthHandler {
-	return HealthHandlerImpl{
+	return healthHandler{
 		log: log,
 	}
 }
@@ -38,7 +38,7 @@ var okHealthResponse = HealthResponse{Status: OkStatus}
 //
 //	@Success		200 {object} handler.HealthResponse
 //	@Router			/health/liveness [get]
-func (h HealthHandlerImpl) Liveness(c *gin.Context) {
+func (h healthHandler) Liveness(c *gin.Context) {
 	h.log.Info("Handled liveness check request")
 	c.JSON(http.StatusOK, okHealthResponse)
 }
@@ -50,7 +50,7 @@ func (h HealthHandlerImpl) Liveness(c *gin.Context) {
 //
 //	@Success		200 {object} handler.HealthResponse
 //	@Router			/health/readiness [get]
-func (h HealthHandlerImpl) Readiness(c *gin.Context) {
+func (h healthHandler) Readiness(c *gin.Context) {
 	h.log.Info("Handled readiness check request")
 	c.JSON(http.StatusOK, okHealthResponse)
 }
