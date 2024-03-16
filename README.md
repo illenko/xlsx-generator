@@ -23,13 +23,13 @@ swag init --parseDependency
 #### Docker build
 
 ````shell
-docker build -t xsls-generator:latest .
+docker build -t xlxs-generator:latest .
 ````
 
 #### Docker run
 
 ````shell
-docker run -d -t -i -p 8080:8080 --name xsls-generator xsls-generator:latest
+docker run -d -t -i -p 8080:8080 --name xlxs-generator xlxs-generator:latest
 ````
 
 ### Generated file example:

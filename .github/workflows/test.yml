@@ -1,0 +1,36 @@
+name: Run tests
+
+on:
+  pull_request:
+    paths:
+      - '**/*.go'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '>=1.22'
+
+      - name: Install Dependencies
+        run: go mod download
+
+      - name: Run Tests and Save Results
+        run: |
+          export GIN_MODE=release
+          go test -v ./... | tee test_results.txt
+        continue-on-error: true
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test_results.txt
