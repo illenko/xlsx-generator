@@ -37,21 +37,15 @@ jobs:
       - name: Run staticcheck
         run: staticcheck ./...
 
-      - name: Install golint
-        run: go install golang.org/x/lint/golint@latest
+      - name: Install junit-report
+        run: go install github.com/jstemmer/go-junit-report@latest
 
-      - name: Run golint
-        run: golint ./...
-
-      - name: Run Tests and Save Results
-        run: |
-          export GIN_MODE=release
-          go test -race -vet=off ./... | tee test_results.txt
-        continue-on-error: false
+      - name: Run Tests
+        run: go test -v ./... | go-junit-report -set-exit-code > report.xml
 
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
-          path: test_results.txt
+          name: report.xml
+          path: report.xml
