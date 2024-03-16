@@ -7,9 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  linters:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -36,6 +35,24 @@ jobs:
 
       - name: Run staticcheck
         run: staticcheck ./...
+
+      - name: Install golangci-lint
+        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+  tests:
+    runs-on: ubuntu-latest
+    needs:
+      - linters
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '>=1.22'
+
+      - name: Install Dependencies
+        run: go mod download
 
       - name: Install junit-report
         run: go install github.com/jstemmer/go-junit-report@latest
